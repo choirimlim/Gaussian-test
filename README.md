@@ -9,7 +9,7 @@ Gaussian Splatting
 프로젝트 목표: 범용적이고 고성능의 3D Gaussian Splatting 기반 파이프라인 설계 및 구현
 목표는 범용성, 효율성, 그리고 확장성을 갖춘 3D Gaussian Splatting 알고리즘을 구현하여, 대규모 장면 및 다양한 응용 분야에서 활용 가능한 완성형 프로젝트를 만드는 것입니다. 이 알고리즘은 이미지 전처리, Structure-from-Motion(SfM), Multi-View Stereo(MVS), Gaussian Splatting 최적화, 그리고 물리적 충돌 가능한 메쉬 생성까지 모든 단계에서 사용할 수 있습니다. GitHub 포트폴리오에 올릴 수 있도록 코드를 정리하여 범용적으로 사용할 수 있는 상태로 제공합니다.
 
-1. 알고리즘 설계
+**1. 알고리즘 설계**
 1.1 전체 파이프라인
 이미지 전처리:
 그림자 제거, 색보정, 노이즈 감소로 입력 이미지 품질 개선.
@@ -22,11 +22,9 @@ Dense Point Cloud를 기반으로 Gaussian 모델 초기화 및 최적화.
 물리 충돌 가능한 메쉬 변환:
 Gaussian Splatting 결과를 삼각형 메쉬로 변환하고, 물리적 충돌 처리가 가능하도록 준비.
 
-2. 프로젝트 구조
+**2. 프로젝트 구조**
 
-bash
-
-universal-gaussian-splatting-pipeline/
+universal-gaussian-splatting-pipeline
 ├── README.md                       # 프로젝트 설명 및 실행 방법
 
 ├── requirements.txt                # Python 의존성
@@ -59,8 +57,10 @@ universal-gaussian-splatting-pipeline/
 
 ├── run_pipeline.py                 # 전체 파이프라인 실행 스크립트
 
-3. 주요 알고리즘 및 코드
+**3. 주요 알고리즘 및 코드**
+
 3.1 이미지 전처리
+
 src/preprocessing.py:
 
 python
@@ -70,7 +70,9 @@ import numpy as np
 from pathlib import Path
 
 def remove_shadows(image):
+
     """그림자 제거."""
+    
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
@@ -78,14 +80,18 @@ def remove_shadows(image):
     return cv2.merge((l, a, b))
 
 def correct_colors(image):
+
     """색상 보정."""
+    
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
     l = cv2.equalizeHist(l)
     return cv2.merge((l, a, b))
 
 def preprocess_images(input_dir, output_dir):
+
     """이미지 전처리 수행."""
+    
     input_dir = Path(input_dir)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -97,7 +103,9 @@ def preprocess_images(input_dir, output_dir):
         cv2.imwrite(str(output_dir / img_path.name), corrected)
 
     print(f"Preprocessed images saved to {output_dir}")
+    
 3.2 COLMAP 기반 SfM 및 MVS
+
 src/colmap_utils.py:
 
 python
@@ -106,14 +114,18 @@ import subprocess
 from pathlib import Path
 
 def run_colmap(command, args):
+   
     """COLMAP 명령 실행."""
+    
     cmd = ["colmap", command]
     for k, v in args.items():
         cmd.append(f"--{k}={v}")
     subprocess.run(cmd, check=True)
 
 def perform_sfm(image_dir, database_path, output_path):
+   
     """SfM 수행."""
+    
     run_colmap("feature_extractor", {
         "database_path": database_path,
         "image_path": image_dir
@@ -128,7 +140,9 @@ def perform_sfm(image_dir, database_path, output_path):
     })
 
 def perform_mvs(sparse_dir, image_dir, output_dir):
+   
     """MVS 수행."""
+    
     run_colmap("image_undistorter", {
         "image_path": image_dir,
         "input_path": sparse_dir,
@@ -141,7 +155,9 @@ def perform_mvs(sparse_dir, image_dir, output_dir):
         "workspace_path": output_dir,
         "output_path": f"{output_dir}/fused.ply"
     })
+    
 3.3 Gaussian Splatting
+
 src/gaussian_splatting.py:
 
 python
@@ -150,7 +166,9 @@ import numpy as np
 import open3d as o3d
 
 def initialize_gaussian(point_cloud_path):
+   
     """가우시안 초기화."""
+    
     pcd = o3d.io.read_point_cloud(point_cloud_path)
     points = np.asarray(pcd.points)
     colors = np.asarray(pcd.colors)
@@ -166,12 +184,17 @@ def initialize_gaussian(point_cloud_path):
     return gaussians
 
 def optimize_gaussians(gaussians):
+    
     """가우시안 최적화."""
+    
     # 간단한 최적화 예제 (사용자의 요구에 따라 확장 가능)
+    
     for g in gaussians:
         g["covariance"] *= 1.05  # 임의의 연산
     return gaussians
+    
 3.4 메쉬 변환 및 물리적 충돌 처리
+
 src/mesh_conversion.py:
 
 python
@@ -179,13 +202,17 @@ python
 from pyntcloud import PyntCloud
 
 def convert_gaussian_to_mesh(gaussians, output_path):
+   
     """가우시안 모델을 메쉬로 변환."""
+    
     points = [g["position"] for g in gaussians]
     cloud = PyntCloud(pd.DataFrame(points, columns=["x", "y", "z"]))
     mesh = cloud.to_mesh()
     mesh.export(output_path)
     print(f"Mesh saved to {output_path}")
+
 3.5 실행 스크립트
+
 run_pipeline.py:
 
 python
@@ -204,17 +231,21 @@ def main():
     mesh_output = "./outputs/mesh/mesh.obj"
 
     # 1. 전처리
+    
     preprocess_images(raw_dir, processed_dir)
 
     # 2. SfM 및 MVS
+    
     perform_sfm(processed_dir, "./data/database.db", sparse_dir)
     perform_mvs(sparse_dir, processed_dir, dense_dir)
 
     # 3. Gaussian Splatting
+    
     gaussians = initialize_gaussian(f"{dense_dir}/fused.ply")
     gaussians = optimize_gaussians(gaussians)
 
     # 4. 메쉬 변환
+    
     convert_gaussian_to_mesh(gaussians, mesh_output)
 
 if __name__ == "__main__":
