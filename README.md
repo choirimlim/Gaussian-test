@@ -28,20 +28,35 @@ bash
 
 universal-gaussian-splatting-pipeline/
 ├── README.md                       # 프로젝트 설명 및 실행 방법
+
 ├── requirements.txt                # Python 의존성
+
 ├── data/                           # 데이터 디렉토리
+
 │   ├── raw_images/                 # 원본 이미지
+
 │   ├── processed_images/           # 전처리된 이미지
+
 ├── outputs/                        # 결과물 디렉토리
+
 │   ├── sparse/                     # SfM 결과
+
 │   ├── dense/                      # MVS 결과
+
 │   ├── gaussian/                   # Gaussian Splatting 결과
+
 │   ├── mesh/                       # 물리적 충돌 가능한 메쉬
+
 ├── src/                            # 소스 코드
+
 │   ├── preprocessing.py            # 이미지 전처리 코드
+
 │   ├── colmap_utils.py             # COLMAP 관련 코드
+
 │   ├── gaussian_splatting.py       # Gaussian Splatting 알고리즘
+
 │   ├── mesh_conversion.py          # 메쉬 변환 및 충돌 처리 코드
+
 ├── run_pipeline.py                 # 전체 파이프라인 실행 스크립트
 
 3. 주요 알고리즘 및 코드
